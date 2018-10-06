@@ -1,15 +1,13 @@
 var canvas;
 var gl;
 
-var cubeVerticesBuffer;
-var cubeVerticesTextureCoordBuffer;
-var cubeVerticesIndexBuffer;
-var cubeVerticesIndexBuffer;
-var cubeRotation = 0.0;
-var cubeImage;
-var cubeTexture;
+var verticesBuffer;
+var verticesTextureCoordBuffer;
+var verticesIndexBuffer;
+var verticesIndexBuffer;
+var image;
+var texture;
 
-var mvMatrix;
 var shaderProgram;
 var vertexPositionAttribute;
 var vertexNormalAttribute;
@@ -18,11 +16,6 @@ var perspectiveMatrix;
 
 const startTime = (new Date).getTime();
 
-//
-// start
-//
-// Called when the canvas is created to get the ball rolling.
-//
 function start() {
   canvas = document.getElementById("glcanvas");
 
@@ -48,9 +41,7 @@ function start() {
 
     // Next, load and set up the textures we'll be using.
 
-  // TODO#2 Start
-    cubeTexture = createCubeTexture("Hello World!");
-    // TODO#2 End
+    texture = createTexture("Hello World!");
 
     // Set up to draw the scene periodically.
 
@@ -58,12 +49,6 @@ function start() {
   }
 }
 
-//
-// initWebGL
-//
-// Initialize WebGL, returning the GL context or null if
-// WebGL isn't available or could not be initialized.
-//
 function initWebGL() {
   gl = null;
 
@@ -83,21 +68,11 @@ function initWebGL() {
 //
 // initBuffers
 //
-// Initialize the buffers we'll need. For this demo, we just have
-// one object -- a simple two-dimensional cube.
-//
 function initBuffers() {
 
-  // Create a buffer for the cube's vertices.
+  verticesBuffer = gl.createBuffer();
 
-  cubeVerticesBuffer = gl.createBuffer();
-
-  // Select the cubeVerticesBuffer as the one to apply vertex
-  // operations to from here out.
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, cubeVerticesBuffer);
-
-  // Now create an array of vertices for the cube.
+  gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
 
   var vertices = [
     // Front face
@@ -115,8 +90,8 @@ function initBuffers() {
 
   // Set up the normals for the vertices, so that we can compute lighting.
 
-  cubeVerticesNormalBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, cubeVerticesNormalBuffer);
+  verticesNormalBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, verticesNormalBuffer);
 
   var vertexNormals = [
     // Front
@@ -129,10 +104,8 @@ function initBuffers() {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexNormals),
                 gl.STATIC_DRAW);
 
-  // Map the texture onto the cube's faces.
-
-  cubeVerticesTextureCoordBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, cubeVerticesTextureCoordBuffer);
+  verticesTextureCoordBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, verticesTextureCoordBuffer);
 
   var textureCoordinates = [
     // Front
@@ -148,32 +121,24 @@ function initBuffers() {
   // Build the element array buffer; this specifies the indices
   // into the vertex array for each face's vertices.
 
-  cubeVerticesIndexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVerticesIndexBuffer);
+  verticesIndexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, verticesIndexBuffer);
 
   // This array defines each face as two triangles, using the
   // indices into the vertex array to specify each triangle's
   // position.
 
-  var cubeVertexIndices = [
+  var vertexIndices = [
     0,  1,  2,      0,  2,  3    // front
   ]
 
   // Now send the element array to GL
 
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,
-      new Uint16Array(cubeVertexIndices), gl.STATIC_DRAW);
+      new Uint16Array(vertexIndices), gl.STATIC_DRAW);
 }
 
-//
-// initTextures
-//
-// Initialize the textures we'll be using, then initiate a load of
-// the texture images. The handleTextureLoaded() callback will finish
-// the job; it gets called each time a texture finishes loading.
-//
-// TODO#1 Start
-function createCubeTexture(text) {
+function createTexture(text) {
 
   // create a hidden canvas to draw the texture
   var canvas = document.createElement('canvas');
@@ -185,8 +150,8 @@ function createCubeTexture(text) {
   body.appendChild(canvas);
 
   // draw texture
-  var cubeImage = document.getElementById('hiddenCanvas');
-  var ctx = cubeImage.getContext('2d');
+  var image = document.getElementById('hiddenCanvas');
+  var ctx = image.getContext('2d');
   ctx.beginPath();
   ctx.rect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.fillStyle = 'white';
@@ -203,11 +168,10 @@ function createCubeTexture(text) {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-  handleTextureLoaded(cubeImage, texture)
+  handleTextureLoaded(image, texture)
 
   return texture;
 }
-// TODO#1 End
 
 function handleTextureLoaded(image, texture) {
   gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -218,25 +182,20 @@ function handleTextureLoaded(image, texture) {
   gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
-//
-// drawScene
-//
-// Draw the scene.
-//
 function drawScene() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, cubeVerticesBuffer);
+  gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
   gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, cubeVerticesTextureCoordBuffer);
+  gl.bindBuffer(gl.ARRAY_BUFFER, verticesTextureCoordBuffer);
   gl.vertexAttribPointer(textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
 
   gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, cubeTexture);
+  gl.bindTexture(gl.TEXTURE_2D, texture);
   gl.uniform1i(gl.getUniformLocation(shaderProgram, "uSampler"), 0);
 
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVerticesIndexBuffer);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, verticesIndexBuffer);
   gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 }
 
@@ -268,14 +227,9 @@ function initShaders() {
 function getShader(gl, id) {
   var shaderScript = document.getElementById(id);
 
-  // Didn't find an element with the specified ID; abort.
-
   if (!shaderScript) {
     return null;
   }
-
-  // Walk through the source element's children, building the
-  // shader source string.
 
   var theSource = "";
   var currentChild = shaderScript.firstChild;
@@ -288,9 +242,6 @@ function getShader(gl, id) {
     currentChild = currentChild.nextSibling;
   }
 
-  // Now figure out what type of shader script we have,
-  // based on its MIME type.
-
   var shader;
 
   if (shaderScript.type == "x-shader/x-fragment") {
@@ -301,15 +252,9 @@ function getShader(gl, id) {
     return null;  // Unknown shader type
   }
 
-  // Send the source to the shader object
-
   gl.shaderSource(shader, theSource);
 
-  // Compile the shader program
-
   gl.compileShader(shader);
-
-  // See if it compiled successfully
 
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
     alert("An error occurred compiling the shaders: " + gl.getShaderInfoLog(shader));
