@@ -45,7 +45,7 @@ function start() {
 
     // Set up to draw the scene periodically.
 
-    setInterval(drawScene, 15);
+    setInterval(drawScene, 16);
   }
 }
 
