@@ -224,82 +224,30 @@ function handleTextureLoaded(image, texture) {
 // Draw the scene.
 //
 function drawScene() {
-  // Clear the canvas before we start drawing on it.
-
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-  // Establish the perspective with which we want to view the
-  // scene. Our field of view is 45 degrees, with a width/height
-  // ratio of 640:480, and we only want to see objects between 0.1 units
-  // and 100 units away from the camera.
-
-  perspectiveMatrix = makePerspective(45, 640.0/480.0, 0.1, 100.0);
-
-  // Set the drawing position to the "identity" point, which is
-  // the center of the scene.
-
-  loadIdentity();
-
-  // Now move the drawing position a bit to where we want to start
-  // drawing the cube.
-
-  mvTranslate([0.0, 0.0, -6.0]);
-
-  // Save the current matrix, then rotate before we draw.
-
-  mvPushMatrix();
-  mvRotate(cubeRotation, [1, 0, 1]);
-
-  // Draw the cube by binding the array buffer to the cube's vertices
-  // array, setting attributes, and pushing it to GL.
 
   gl.bindBuffer(gl.ARRAY_BUFFER, cubeVerticesBuffer);
   gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
 
-  // Set the texture coordinates attribute for the vertices.
-
   gl.bindBuffer(gl.ARRAY_BUFFER, cubeVerticesTextureCoordBuffer);
   gl.vertexAttribPointer(textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
-
-  // Bind the normals buffer to the shader attribute.
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, cubeVerticesNormalBuffer);
-  gl.vertexAttribPointer(vertexNormalAttribute, 3, gl.FLOAT, false, 0, 0);
-
-  // Specify the texture to map onto the faces.
 
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, cubeTexture);
   gl.uniform1i(gl.getUniformLocation(shaderProgram, "uSampler"), 0);
 
-  // Draw the cube.
-
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVerticesIndexBuffer);
-  setMatrixUniforms();
   gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
-
-  // Restore the original matrix
-
-  mvPopMatrix();
 }
 
-//
-// initShaders
-//
-// Initialize the shaders, so WebGL knows how to light our scene.
-//
 function initShaders() {
   var fragmentShader = getShader(gl, "shader-fs");
   var vertexShader = getShader(gl, "shader-vs");
-
-  // Create the shader program
 
   shaderProgram = gl.createProgram();
   gl.attachShader(shaderProgram, vertexShader);
   gl.attachShader(shaderProgram, fragmentShader);
   gl.linkProgram(shaderProgram);
-
-  // If creating the shader program failed, alert
 
   if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
     alert("Unable to initialize the shader program.");
@@ -317,12 +265,6 @@ function initShaders() {
   gl.enableVertexAttribArray(vertexNormalAttribute);
 }
 
-//
-// getShader
-//
-// Loads a shader program by scouring the current document,
-// looking for a script with the specified ID.
-//
 function getShader(gl, id) {
   var shaderScript = document.getElementById(id);
 
@@ -375,60 +317,4 @@ function getShader(gl, id) {
   }
 
   return shader;
-}
-
-//
-// Matrix utility functions
-//
-
-function loadIdentity() {
-  mvMatrix = Matrix.I(4);
-}
-
-function multMatrix(m) {
-  mvMatrix = mvMatrix.x(m);
-}
-
-function mvTranslate(v) {
-  multMatrix(Matrix.Translation($V([v[0], v[1], v[2]])).ensure4x4());
-}
-
-function setMatrixUniforms() {
-  var pUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
-  gl.uniformMatrix4fv(pUniform, false, new Float32Array(perspectiveMatrix.flatten()));
-
-  var mvUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-  gl.uniformMatrix4fv(mvUniform, false, new Float32Array(mvMatrix.flatten()));
-
-  var normalMatrix = mvMatrix.inverse();
-  normalMatrix = normalMatrix.transpose();
-  var nUniform = gl.getUniformLocation(shaderProgram, "uNormalMatrix");
-  gl.uniformMatrix4fv(nUniform, false, new Float32Array(normalMatrix.flatten()));
-}
-
-var mvMatrixStack = [];
-
-function mvPushMatrix(m) {
-  if (m) {
-    mvMatrixStack.push(m.dup());
-    mvMatrix = m.dup();
-  } else {
-    mvMatrixStack.push(mvMatrix.dup());
-  }
-}
-
-function mvPopMatrix() {
-  if (!mvMatrixStack.length) {
-    throw("Can't pop from an empty matrix stack.");
-  }
-
-  mvMatrix = mvMatrixStack.pop();
-  return mvMatrix;
-}
-
-function mvRotate(angle, v) {
-  var inRadians = angle * Math.PI / 180.0;
-
-  var m = Matrix.Rotation(inRadians, $V([v[0], v[1], v[2]])).ensure4x4();
-  multMatrix(m);
 }
