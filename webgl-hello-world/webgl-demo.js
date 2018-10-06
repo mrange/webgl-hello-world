@@ -3,7 +3,7 @@ var gl;
 
 var verticesBuffer;
 var verticesTextureCoordBuffer;
-var verticesIndexBuffer;
+var verticesNormalBuffer;
 var verticesIndexBuffer;
 var image;
 var texture;
@@ -190,6 +190,9 @@ function drawScene() {
 
   gl.bindBuffer(gl.ARRAY_BUFFER, verticesTextureCoordBuffer);
   gl.vertexAttribPointer(textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, verticesNormalBuffer);
+  gl.vertexAttribPointer(vertexNormalAttribute, 3, gl.FLOAT, false, 0, 0);
 
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, texture);
