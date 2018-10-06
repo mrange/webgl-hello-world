@@ -8,6 +8,9 @@ var verticesIndexBuffer;
 var image;
 var texture;
 
+var width;
+var height;
+
 var shaderProgram;
 var vertexPositionAttribute;
 var vertexNormalAttribute;
@@ -19,6 +22,8 @@ const startTime = date.getTime();
 
 function start() {
   canvas = document.getElementById("glcanvas");
+  width  = canvas.width;
+  height = canvas.height;
 
   initWebGL(canvas);      // Initialize the GL context
 
@@ -203,6 +208,7 @@ function drawScene() {
   const currentTime = (new Date).getTime();
   const iTime = (currentTime - startTime) / 1000.0;
 
+  gl.uniform2f(gl.getUniformLocation(shaderProgram, "iResolution"), width, height);
   gl.uniform1f(gl.getUniformLocation(shaderProgram, "iTime"), iTime);
 
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, verticesIndexBuffer);

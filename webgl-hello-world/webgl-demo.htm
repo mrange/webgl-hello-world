@@ -13,7 +13,7 @@
       // -----------------------------------------------------------------------
       precision mediump float;
 
-      vec2 iResolution = vec2(1920.0, 1080.0);
+      uniform vec2 iResolution;
       uniform float iTime;
 
       varying highp vec2 vTextureCoord;
@@ -574,7 +574,7 @@
   </head>
 
   <body onload="start()">
-    <canvas id="glcanvas" width="1920" height="1080">
+    <canvas id="glcanvas" width="800" height="600">
       Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
     </canvas>
   </body>
