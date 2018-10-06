@@ -14,7 +14,8 @@ var vertexNormalAttribute;
 var textureCoordAttribute;
 var perspectiveMatrix;
 
-const startTime = (new Date).getTime();
+const date  = new Date
+const startTime = date.getTime();
 
 function start() {
   canvas = document.getElementById("glcanvas");
@@ -74,7 +75,7 @@ function initBuffers() {
 
   gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
 
-  var vertices = [
+  const vertices = [
     // Front face
     -1.0, -1.0,  1.0,
      1.0, -1.0,  1.0,
@@ -93,7 +94,7 @@ function initBuffers() {
   verticesNormalBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, verticesNormalBuffer);
 
-  var vertexNormals = [
+  const vertexNormals = [
     // Front
      0.0,  0.0,  1.0,
      0.0,  0.0,  1.0,
@@ -107,7 +108,7 @@ function initBuffers() {
   verticesTextureCoordBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, verticesTextureCoordBuffer);
 
-  var textureCoordinates = [
+  const textureCoordinates = [
     // Front
     0.0,  0.0,
     1.0,  0.0,
@@ -128,7 +129,7 @@ function initBuffers() {
   // indices into the vertex array to specify each triangle's
   // position.
 
-  var vertexIndices = [
+  const vertexIndices = [
     0,  1,  2,      0,  2,  3    // front
   ]
 
@@ -141,17 +142,18 @@ function initBuffers() {
 function createTexture(text) {
 
   // create a hidden canvas to draw the texture
-  var canvas = document.createElement('canvas');
+  const canvas  = document.createElement('canvas');
   canvas.id     = "hiddenCanvas";
   canvas.width  = 512;
   canvas.height = 512;
   canvas.style.display   = "none";
-  var body = document.getElementsByTagName("body")[0];
+
+  const body = document.getElementsByTagName("body")[0];
   body.appendChild(canvas);
 
   // draw texture
-  var image = document.getElementById('hiddenCanvas');
-  var ctx = image.getContext('2d');
+  const image = document.getElementById('hiddenCanvas');
+  const ctx   = image.getContext('2d');
   ctx.beginPath();
   ctx.rect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.fillStyle = 'white';
@@ -163,7 +165,7 @@ function createTexture(text) {
   ctx.restore();
 
   // create new texture
-  var texture = gl.createTexture();
+  const texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
@@ -198,13 +200,18 @@ function drawScene() {
   gl.bindTexture(gl.TEXTURE_2D, texture);
   gl.uniform1i(gl.getUniformLocation(shaderProgram, "uSampler"), 0);
 
+  const currentTime = (new Date).getTime();
+  const iTime = (currentTime - startTime) / 1000.0;
+
+  gl.uniform1f(gl.getUniformLocation(shaderProgram, "iTime"), iTime);
+
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, verticesIndexBuffer);
   gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 }
 
 function initShaders() {
-  var fragmentShader = getShader(gl, "shader-fs");
-  var vertexShader = getShader(gl, "shader-vs");
+  const fragmentShader  = getShader(gl, "shader-fs");
+  const vertexShader    = getShader(gl, "shader-vs");
 
   shaderProgram = gl.createProgram();
   gl.attachShader(shaderProgram, vertexShader);
@@ -228,13 +235,13 @@ function initShaders() {
 }
 
 function getShader(gl, id) {
-  var shaderScript = document.getElementById(id);
+  const shaderScript = document.getElementById(id);
 
   if (!shaderScript) {
     return null;
   }
 
-  var theSource = "";
+  var theSource    = "";
   var currentChild = shaderScript.firstChild;
 
   while(currentChild) {
